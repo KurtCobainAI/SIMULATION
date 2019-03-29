@@ -1,0 +1,211 @@
+import math,random,sys
+import numpy as np
+import keras
+import pygame
+from keras.utils import to_categorical
+from keras.layers import Dense
+from keras.optimizers import Adam
+from keras.models import Sequential, load_model
+
+pygame.init ()
+win = pygame.display.set_mode((600,600))
+clock=0
+x_food= random.random()*100+300
+y_food= random.random()*100+300
+dist=100
+width=30
+height=30
+xEnemy=100
+yEnemy=300
+
+def pr(x,y):
+	print(x)
+	print(y)
+def newrandompop(f):
+	arr=[]
+	winu=-1
+	for x in range (f+1):
+		winu+=1
+		if winu==f :
+			return (arr)
+		Bob= Sequential()
+		Bob.add(Dense(3, activation="relu" , input_shape=(3,)))
+		Bob.add(Dense(1+x, activation="relu"))
+		Bob.add(Dense(2 , activation="softmax", ))
+
+		if winu==0:
+			Bob.save('0Citizen.h5')
+			arr.append('0Citizen.h5')
+		if winu==1:
+		    Bob.save('1Citizen.h5')
+		    arr.append('1Citizen.h5')
+		if winu==2:
+		    Bob.save('2Citizen.h5')
+		    arr.append('2Citizen.h5')
+		if winu==3:
+		    Bob.save('3Citizen.h5')
+		    arr.append('3Citizen.h5')
+		if winu==4:
+		    Bob.save('4Citizen.h5')
+		    arr.append('4Citizen.h5')
+		if winu==5:
+			Bob.save('5Citizen.h5')
+			arr.append('5Citizen.h5')
+		if winu==6:
+			Bob.save('6Citizen.h5')
+			arr.append('6Citizen.h5')
+		if winu==7:
+			Bob.save('7Citizen.h5')
+			arr.append('7Citizen.h5')
+		if winu==8:
+			Bob.save('8Citizen.h5')
+			arr.append('8Citizen.h5')
+		if winu==9:
+			Bob.save('9Citizen.h5')
+			arr.append('9Citizen.h5')	
+def GetName(winu,Name):
+	for x in range (1):
+		if winu==0:
+			return('0'+Name+'.h5')
+		if winu==1:
+			return('1'+Name+'.h5')
+		if winu==2:
+			return('2'+Name+'.h5')		
+		if winu==3:
+			return('3'+Name+'.h5')
+		if winu==4:
+			return('4'+Name+'.h5')
+		if winu==5:
+			return('5'+Name+'.h5')	
+		if winu==6:
+			return('6'+Name+'.h5')
+		if winu==7:
+			return('7'+Name+'.h5')
+		if winu==8:
+			return('8'+Name+'.h5')		
+		if winu==9:
+			return('9'+Name+'.h5')
+def spawndudes():
+
+	Gen = newrandompop(10)
+	NewGen=[]
+	WIE = []
+	#stands for Where Is Everyone
+	for g in range (len(Gen)):
+		WIE.append(50+g*5)
+		WIE.append(50)
+	while True :
+		clock=0
+		#generating new bots
+		if len(Gen)==0:
+			Gen = newrandompop(10)
+			for g in range (len(Gen)):
+				WIE.append(50+g*5)
+				WIE.append(50)
+		#printing starting point
+
+		for i in range(len(Gen)):
+			xx=list(WIE)[int(0+i*2)]
+			yy=list(WIE)[int(1+i*2)]
+			pygame.draw.rect(win,(255,0,0),(xx,yy, width,height))		
+
+		while clock < 12 and len(Gen)>0:
+			xxxy=[]
+			clock+=1				
+			win.fill((0,0,0))
+			for x in range ( len(Gen)):
+
+				print(x)
+				died=False
+				Murdered=False
+
+				for dead in WIE:
+					if dead<0 or dead>600 or Murdered==True:
+						#checking if bot left game and killing in the name
+						if len(Gen)>x:
+
+							Gen.pop(x)
+							if x%2==1:
+								WIE.pop(x-1)
+								WIE.pop(x-1)
+							else : 
+								WIE.pop(x)
+								WIE.pop(x)
+							died=True
+
+				if died ==False and x<len(Gen) and len(Gen)>0:
+					Reproduced=False
+
+					Botopob=list(Gen)[(int(x))]
+					#getting the new location of the bots 
+
+					input = []
+					xx=list(WIE)[int(0+x*2)]
+					yy=list(WIE)[int(1+x*2)]
+
+					distx=(x_food-xx)
+					disty=(y_food-yy)
+#getting the inputs
+					input.append(distx*0.005)
+					input.append(disty*0.005)
+					input.append((math.hypot(xx-xEnemy,yy-yEnemy))*0.002)
+					input=np.array(input)
+					input=input.reshape(1,3)
+					Bob=load_model(Botopob)
+#getting predictions
+					where = Bob.predict(input)
+					where =(np.array(where)).reshape(2,)
+					dire= list(where)[int(0)]
+					dire = dire+dire -1
+					speed= list(where)[int(1)]
+
+					x2=xx+math.cos(math.radians(180*dire))*speed*100
+					y2=yy+math.sin(math.radians(180*dire))*speed*100
+
+					if math.hypot(x2-xEnemy,y2-yEnemy)<50:
+						#murdered ?
+						if len(Gen)>x:
+
+							Gen.pop(x)
+							if x%2==1:
+								WIE.pop(x-1)
+								WIE.pop(x-1)
+							else : 
+								WIE.pop(x)
+								WIE.pop(x)
+
+					if math.hypot(x2-x_food,y2-y_food)<50:
+						#did he hit the food ?
+						print('yes')
+
+						milenialboyy=Sequential()
+						milenialboyy=load_model(list(Gen)[int(x)])
+
+						Name =GetName(len(NewGen),'New')
+
+						milenialboyy.save(Name)
+
+						Reproduced=True
+						NewGen.append(Name)
+
+					if len(NewGen)==10:
+						print('hahaaaa')
+						return(NewGen)
+					#updating position for the bot
+
+					WIE.pop(x*2)
+					WIE.insert (0+x*2,x2)				
+					WIE.pop(1+x*2)
+					WIE.insert (1+x*2,y2)
+
+					pygame.draw.rect(win,(255,0,0),(x2,y2, width,height))
+					if Reproduced == True :
+
+						pygame.draw.rect(win,(100,255,0),(x2,y2, width,height))
+
+			pygame.draw.circle(win,(10,100,200),(int(x_food),int(y_food)),50,50)
+			pygame.draw.circle(win,(255,255,255),(xEnemy,yEnemy), 10,10)
+			pygame.display.update()
+
+newgen =spawndudes()
+print(newgen)
